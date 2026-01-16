@@ -165,10 +165,10 @@ location.reload();
 
 ### Esto eliminará:
 
-Usuarios
+   - Usuarios
 
-Sesiones
+   - Sesiones
 
-Contactos
+   - Contactos
 
-Historial de movimientos
+   - Historial de movimientos
