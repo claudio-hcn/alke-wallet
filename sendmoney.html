@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <title>Wallet - Enviar Dinero</title>
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+
+<body class="bg-dark">
+
+  <div class="container min-vh-100 d-flex align-items-center justify-content-center" id="container">
+    <div class="row w-100 justify-content-center">
+      <div class="col-12 col-md-8 col-xl-6">
+
+        <div class="bg-secondary p-4 rounded shadow-lg">
+
+          <h2 class="text-warning text-center mb-3">Enviar Dinero</h2>
+
+          <!-- SALDO -->
+          <div class="bg-light rounded p-3 mb-4 text-center">
+            <small class="text-muted d-block">Saldo disponible</small>
+            <h2 id="monto" class="mb-0"></h2>
+          </div>
+
+          <!-- CONTACTOS -->
+          <h5 class="text-light text-center">Contactos</h5>
+
+          <button type="button" class="btn btn-primary btn-block mb-2"
+            data-toggle="modal" data-target="#modalContacto">
+            Agregar contacto
+          </button>
+
+          <ul id="contactList" class="list-group mb-2"></ul>
+
+          <button class="btn btn-danger btn-sm d-none mb-3"
+            id="eliminarContacto">
+            Eliminar contacto seleccionado
+          </button>
+
+          <!-- MONTO -->
+          <div class="form-group">
+            <label class="text-light">Monto a enviar</label>
+            <input type="number" id="montoEnvio" class="form-control" placeholder="Ingrese monto">
+          </div>
+
+          <button class="btn btn-success btn-block mb-3" id="btnEnviar">
+            Enviar dinero
+          </button>
+
+          <!-- NAVEGACIÓN -->
+          <div class="row">
+            <div class="col-6">
+              <a href="menu.html" class="btn btn-outline-light btn-block">Volver</a>
+            </div>
+            <div class="col-6">
+              <button class="btn btn-danger btn-block" id="logout">
+                Cerrar sesión
+              </button>
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL CONTACTO -->
+  <div class="modal fade" id="modalContacto" tabindex="-1">
+    <div class="modal-dialog">
+      <div class="modal-content">
+
+        <div class="modal-header">
+          <h5 class="modal-title">Agregar contacto</h5>
+          <button type="button" class="close" data-dismiss="modal">
+            <span>&times;</span>
+          </button>
+        </div>
+
+        <div class="modal-body">
+          <form id="formContacto">
+            <div class="form-group">
+              <label>Nombre</label>
+              <input type="text" class="form-control" id="nombre" required>
+            </div>
+
+            <div class="form-group">
+              <label>Email (opcional)</label>
+              <input type="email" class="form-control" id="emailContacto">
+            </div>
+
+            <div class="form-group">
+              <label>N° Cuenta</label>
+              <input type="number" class="form-control" id="nro_cuenta" required>
+            </div>
+
+            <div class="form-group">
+              <label>Banco</label>
+              <select class="form-control" id="banco" required>
+                <option value="">Seleccione banco</option>
+                <option>Banco Estado</option>
+                <option>Banco de Chile</option>
+                <option>Banco Itaú</option>
+                <option>Santander</option>
+                <option>Mercado Pago</option>
+              </select>
+            </div>
+
+            <button type="submit" class="btn btn-success btn-block">
+              Guardar contacto
+            </button>
+          </form>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- SCRIPTS -->
+  <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"></script>
+
+  <script>
+    $(document).ready(function () {
+
+      /* =========================
+         AUTENTICACIÓN
+      ========================= */
+      const currentUserId = localStorage.getItem('currentUserId');
+      if (!currentUserId) {
+        window.location.href = 'index.html';
+        return;
+      }
+
+      let users = JSON.parse(localStorage.getItem('users')) || [];
+      let currentUser = users.find(u => u.id == currentUserId);
+
+      if (!currentUser) {
+        window.location.href = 'index.html';
+        return;
+      }
+
+      $('#monto').text('$' + currentUser.saldo.toLocaleString('es-CL'));
+
+      /* =========================
+         CONTACTOS
+      ========================= */
+      let contactos = JSON.parse(
+        localStorage.getItem('contactos_' + currentUserId)
+      ) || [];
+
+      let contactoSeleccionado = null;
+
+      function renderContactos() {
+        const $lista = $('#contactList');
+        $lista.empty();
+        contactoSeleccionado = null;
+        $('#eliminarContacto').addClass('d-none');
+
+        contactos.forEach(c => {
+          const $li = $('<li>', {
+            class: 'list-group-item list-group-item-action',
+            text: `${c.nombre} - ${c.banco}`
+          });
+
+          $li.on('click', function () {
+            $('#contactList li').removeClass('active');
+            $(this).addClass('active');
+            contactoSeleccionado = c;
+            $('#eliminarContacto').removeClass('d-none');
+          });
+
+          $lista.append($li);
+        });
+      }
+
+      renderContactos();
+
+      /* =========================
+         AGREGAR CONTACTO
+      ========================= */
+      $('#formContacto').submit(function (e) {
+        e.preventDefault();
+
+        contactos.push({
+          id: Date.now(),
+          nombre: $('#nombre').val(),
+          email: $('#emailContacto').val() || null,
+          nro_cuenta: $('#nro_cuenta').val(),
+          banco: $('#banco').val()
+        });
+
+        localStorage.setItem(
+          'contactos_' + currentUserId,
+          JSON.stringify(contactos)
+        );
+
+        renderContactos();
+        $('#modalContacto').modal('hide');
+        this.reset();
+      });
+
+      /* =========================
+         ELIMINAR CONTACTO
+      ========================= */
+      $('#eliminarContacto').click(function () {
+        if (!contactoSeleccionado) return;
+
+        if (!confirm(`Eliminar a ${contactoSeleccionado.nombre}?`)) return;
+
+        contactos = contactos.filter(c => c.id !== contactoSeleccionado.id);
+
+        localStorage.setItem(
+          'contactos_' + currentUserId,
+          JSON.stringify(contactos)
+        );
+
+        renderContactos();
+      });
+
+      /* =========================
+         ENVIAR DINERO
+      ========================= */
+      $('#btnEnviar').click(function () {
+
+        const monto = Number($('#montoEnvio').val());
+        if (!contactoSeleccionado || monto <= 0 || monto > currentUser.saldo) {
+          alert('Datos inválidos');
+          return;
+        }
+
+        const usuarioDestino = users.find(
+          u => u.email === contactoSeleccionado.email
+        );
+
+        currentUser.saldo -= monto;
+
+        currentUser.movimientos.unshift({
+          tipo: 'envio',
+          a: contactoSeleccionado.nombre,
+          monto,
+          fecha: new Date().toLocaleString('es-CL')
+        });
+
+        if (usuarioDestino) {
+          usuarioDestino.saldo += monto;
+          usuarioDestino.movimientos.unshift({
+            tipo: 'recepcion',
+            de: currentUser.nombre,
+            monto,
+            fecha: new Date().toLocaleString('es-CL')
+          });
+        }
+
+        localStorage.setItem('users', JSON.stringify(users));
+
+        alert('Transferencia realizada');
+        location.reload();
+      });
+
+      /* =========================
+         LOGOUT
+      ========================= */
+      $('#logout').click(() => {
+        localStorage.removeItem('currentUserId');
+        window.location.href = 'index.html';
+      });
+
+      /* =========================
+         DESELECCIONAR CLICK FUERA
+      ========================= */
+      $(document).click(function (e) {
+        if (!$(e.target).closest('#container').length) {
+          $('#contactList li').removeClass('active');
+          contactoSeleccionado = null;
+          $('#eliminarContacto').addClass('d-none');
+        }
+      });
+
+    });
+  </script>
+
+</body>
+</html>

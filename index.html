@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <title>Wallet - Login</title>
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <style>
+    .input-wrapper {
+      position: relative;
+    }
+
+    .tooltip-custom {
+      visibility: hidden;
+      background-color: #333;
+      color: white;
+      padding: 5px 10px;
+      border-radius: 4px;
+      position: absolute;
+      bottom: 100%;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 13px;
+      opacity: 0;
+      transition: opacity 0.3s;
+      white-space: nowrap;
+    }
+
+    .input-wrapper:hover .tooltip-custom {
+      visibility: visible;
+      opacity: 1;
+    }
+  </style>
+</head>
+
+<body class="bg-dark">
+
+  <!-- LOGIN -->
+  <div class="container-fluid px-3 py-5">
+    <div class="row">
+      <div class="col-12 col-md-8 col-lg-6 col-xl-4 mx-auto">
+        <div class="bg-secondary p-4 rounded shadow">
+
+          <h2 class="text-warning">Inicio de sesión</h2>
+          <h6 class="text-warning mb-4">Wallet App</h6>
+
+          <form id="login">
+
+            <div class="form-group input-wrapper">
+              <label class="text-white">Email</label>
+              <input type="email" class="form-control" id="email">
+              <span class="tooltip-custom" id="ingresarCorreo">
+                admin@email.com
+              </span>
+            </div>
+
+            <div class="form-group input-wrapper">
+              <label class="text-white">Contraseña</label>
+              <input type="password" class="form-control" id="password">
+              <span class="tooltip-custom" id="ingresarPass">
+                admin123
+              </span>
+            </div>
+
+            <button type="submit" class="btn btn-primary btn-block mt-3">
+              Iniciar sesión
+            </button>
+
+            <button type="button"
+              class="btn btn-outline-light btn-block mt-3"
+              data-toggle="modal"
+              data-target="#modalRegistro">
+              Crear cuenta
+            </button>
+
+          </form>
+
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL REGISTRO -->
+  <div class="modal fade" id="modalRegistro" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content bg-dark text-light">
+
+        <div class="modal-header border-secondary">
+          <h5 class="modal-title">Registro de usuario</h5>
+          <button type="button" class="close text-light" data-dismiss="modal">
+            <span>&times;</span>
+          </button>
+        </div>
+
+        <form id="formRegistro">
+          <div class="modal-body">
+
+            <div class="form-group">
+              <label>Nombre</label>
+              <input type="text" class="form-control" id="regNombre" required>
+            </div>
+
+            <div class="form-group">
+              <label>Email</label>
+              <input type="email" class="form-control" id="regEmail" required>
+            </div>
+
+            <div class="form-group">
+              <label>Contraseña</label>
+              <input type="password" class="form-control" id="regPassword" required>
+            </div>
+
+          </div>
+
+          <div class="modal-footer border-secondary">
+            <button type="submit" class="btn btn-success btn-block">
+              Crear cuenta
+            </button>
+          </div>
+        </form>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- SCRIPTS -->
+  <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"></script>
+
+  <script>
+    // Inicializar admin
+    function initUsers() {
+      if (!localStorage.getItem('users')) {
+        const users = [{
+          id: 1,
+          email: 'admin@email.com',
+          password: 'admin123',
+          nombre: 'Admin',
+          saldo: 100000,
+          movimientos: []
+        }];
+        localStorage.setItem('users', JSON.stringify(users));
+      }
+    }
+    initUsers();
+
+    $(document).ready(function () {
+
+      // Tooltips click
+      $('#ingresarCorreo').click(() => $('#email').val('admin@email.com'));
+      $('#ingresarPass').click(() => $('#password').val('admin123'));
+
+      // LOGIN
+      $('#login').submit(function (e) {
+        e.preventDefault();
+
+        const email = $('#email').val();
+        const password = $('#password').val();
+
+        const users = JSON.parse(localStorage.getItem('users')) || [];
+        const user = users.find(u => u.email === email && u.password === password);
+
+        if (!user) {
+          alert('Email o contraseña incorrectos');
+          return;
+        }
+
+        localStorage.setItem('currentUserId', user.id);
+        window.location.href = 'menu.html';
+      });
+
+      // REGISTRO
+      $('#formRegistro').submit(function (e) {
+        e.preventDefault();
+
+        const nombre = $('#regNombre').val();
+        const email = $('#regEmail').val();
+        const password = $('#regPassword').val();
+
+        let users = JSON.parse(localStorage.getItem('users')) || [];
+
+        if (users.some(u => u.email === email)) {
+          alert('El email ya está registrado');
+          return;
+        }
+
+        users.push({
+          id: Date.now(),
+          nombre,
+          email,
+          password,
+          saldo: 0,
+          movimientos: []
+        });
+
+        localStorage.setItem('users', JSON.stringify(users));
+
+        alert('Usuario creado correctamente');
+        $('#modalRegistro').modal('hide');
+        this.reset();
+      });
+
+    });
+  </script>
+
+</body>
+</html>

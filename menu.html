@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <title>Wallet - Menú Principal</title>
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<script>
+
+</script>
+
+<body class="bg-dark">
+
+  <div class="container min-vh-100 d-flex align-items-center justify-content-center">
+    <div class="row w-100 justify-content-center">
+      <div class="col-12 col-md-8 col-xl-6">
+
+        <div class="bg-secondary p-4 rounded shadow-lg text-center">
+
+          <!-- TÍTULO -->
+          <h2 class="text-warning mb-1">Wallet App</h2>
+          <p class="text-light mb-4" style="font-size: 0.95rem;">
+            Menú principal
+          </p>
+
+          <!-- SALDO -->
+          <div class="bg-light rounded p-3 mb-4">
+            <small class="text-muted d-block">
+              Saldo disponible
+            </small>
+            <h2 id="monto" class="font-weight-bold mb-0"></h2>
+          </div>
+
+          <!-- ACCIONES -->
+          <p class="text-light mb-3">
+            ¿Qué desea hacer hoy?
+          </p>
+
+          <div class="row">
+
+            <div class="col-12 col-md-6 mb-2">
+              <a href="#" id="btn-depositar"
+                 class="btn btn-primary btn-block py-3">
+                💰 Depositar
+              </a>
+            </div>
+
+            <div class="col-12 col-md-6 mb-2">
+              <a href="#" id="btn-girar"
+                 class="btn btn-primary btn-block py-3">
+                🔁 Enviar dinero
+              </a>
+            </div>
+
+            <div class="col-12 mt-2">
+              <a href="#" id="btn-historial"
+                 class="btn btn-outline-light btn-block py-3">
+                📄 Historial de transacciones
+              </a>
+            </div>
+
+          </div>
+
+          <!-- LOGOUT -->
+          <button id="logout"
+            class="btn btn-danger btn-block mt-4 py-2">
+            Cerrar sesión
+          </button>
+
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+</body>
+
+<script src="https://code.jquery.com/jquery-3.2.1.slim.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"></script>
+<script>
+  
+  $(document).ready(function () {
+
+    // 🔐 PROTECCIÓN DE SESIÓN
+    const currentUserId = localStorage.getItem('currentUserId');
+    if (!currentUserId) {
+      window.location.href = 'index.html';
+      return
+    }
+
+    // 👥 OBTENER USUARIO LOGUEADO
+    let users = JSON.parse(localStorage.getItem('users')) || [];
+    let currentUser = users.find(u => u.id == currentUserId);
+
+    if (!currentUser) {
+      alert('Usuario inválido');
+      localStorage.removeItem('currentUserId');
+      window.location.href = 'index.html';
+      return;
+    }
+
+    // 👋 BIENVENIDA
+    $('h2').after(`<p class="text-light">Bienvenido ${currentUser.nombre}</p>`);
+
+    // 💰 MOSTRAR SALDO (POR USUARIO)
+    $('#monto').text('$' + currentUser.saldo.toLocaleString('es-CL'));
+
+    // 🔔 TOAST + REDIRECCIÓN
+    function mostrarToast(mensaje, color, url) {
+      const toastHTML = `
+      <div class="toast" role="alert"
+        style="position: fixed; top: 50%; left: 50%;
+        transform: translate(-50%, -50%) scale(0);
+        z-index: 9999; min-width: 300px;
+        transition: transform 0.3s ease;">
+        <div class="toast-body text-white text-center"
+          style="background:${color}; font-size:18px;
+          padding:20px; border-radius:10px;">
+          ${mensaje}
+        </div>
+      </div>
+    `;
+
+      document.body.insertAdjacentHTML('beforeend', toastHTML);
+      const toastElement = document.querySelector('.toast:last-child');
+
+      setTimeout(() => {
+        toastElement.style.transform = 'translate(-50%, -50%) scale(1)';
+      }, 10);
+
+      setTimeout(() => {
+        window.location.href = url;
+      }, 2000);
+    }
+
+    // 🔘 BOTONES
+    $("#btn-depositar").on('click', function (e) {
+      e.preventDefault();
+      mostrarToast('Direccionando a pantalla depositar', '#696665', 'deposit.html');
+    });
+
+    $("#btn-girar").on('click', function (e) {
+      e.preventDefault();
+      mostrarToast('Direccionando a pantalla Enviar Dinero', '#696665', 'sendmoney.html');
+    });
+
+    $("#btn-historial").on('click', function (e) {
+      e.preventDefault();
+      mostrarToast('Direccionando a pantalla historial', '#696665', 'transactions.html');
+    });
+
+    // 🚪 LOGOUT
+    $("#logout").on('click', function () {
+      localStorage.removeItem('currentUserId');
+      window.location.href = 'index.html';
+    });
+
+  });
+
+
+</script>
+
+</html>

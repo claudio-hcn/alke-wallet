@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <title>Wallet - Últimos Movimientos</title>
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+  </style>
+</head>
+
+
+<body class="bg-dark">
+
+  <div class="container min-vh-100 d-flex align-items-center justify-content-center">
+    <div class="row w-100 justify-content-center">
+      <div class="col-12 col-md-9 col-xl-7">
+
+        <div class="bg-secondary p-4 rounded shadow-lg">
+
+          <!-- TÍTULO -->
+          <h2 class="text-warning text-center mb-1">Historial</h2>
+          <p class="text-light text-center mb-4" style="font-size: 0.95rem;">
+            Últimas transacciones realizadas
+          </p>
+
+          <!-- SALDO ACTUAL -->
+          <div class="bg-light rounded p-3 mb-4 text-center">
+            <small class="text-muted d-block">Saldo actual</small>
+            <h2 id="monto" class="font-weight-bold mb-0"></h2>
+          </div>
+
+          <!-- LISTA HISTORIAL -->
+          <div class="list-group" id="historial">
+            <!-- JS inserta aquí las transacciones -->
+          </div>
+
+          <!-- MENSAJE VACÍO -->
+          <div id="sinMovimientos"
+            class="text-center text-light mt-4"
+            style="display:none;">
+            <p class="mb-1">No hay transacciones registradas</p>
+            <small class="text-muted">Comienza enviando o recibiendo dinero</small>
+          </div>
+
+          <!-- NAVEGACIÓN -->
+          <div class="row mt-4">
+            <div class="col-6">
+              <a href="menu.html"
+                class="btn btn-outline-light btn-block">
+                Volver
+              </a>
+            </div>
+            <div class="col-6">
+              <button class="btn btn-danger btn-block" id="logout">
+                Cerrar sesión
+              </button>
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+</body>
+
+    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"></script>
+
+<script>
+  // 1️⃣ Validar sesión
+  const currentUserId = localStorage.getItem('currentUserId');
+  if (!currentUserId) {
+    window.location.href = 'index.html';
+  }
+
+  // 2️⃣ Obtener usuario
+  const users = JSON.parse(localStorage.getItem('users')) || [];
+  const currentUser = users.find(u => u.id == currentUserId);
+
+  if (!currentUser) {
+    alert('Usuario no válido');
+    window.location.href = 'index.html';
+  }
+
+  // 3️⃣ Mostrar saldo
+  $('#monto').text(`$${currentUser.saldo.toLocaleString('es-CL')}`);
+
+  const movimientos = currentUser.movimientos || [];
+  const $historial = $('#historial');
+
+  if (movimientos.length === 0) {
+    $('#sinMovimientos').show();
+  } else {
+    $('#sinMovimientos').hide();
+
+    movimientos.forEach(m => {
+
+      let titulo = '';
+      let color = '';
+
+      if (m.tipo === 'envio') {
+        titulo = `Envío a ${m.a}`;
+        color = 'text-danger';
+      }
+
+      if (m.tipo === 'recepcion') {
+        titulo = `Recibido de ${m.de}`;
+        color = 'text-success';
+      }
+
+      if (m.tipo === 'deposito') {
+        titulo = 'Depósito';
+        color = 'text-primary';
+      }
+
+      $historial.append(`
+        <div class="list-group-item bg-dark text-light border-secondary">
+          <div class="d-flex justify-content-between">
+            <strong class="${color}">${titulo}</strong>
+            <span>$${m.monto.toLocaleString('es-CL')}</span>
+          </div>
+          <small class="text-muted">${m.fecha}</small>
+        </div>
+      `);
+    });
+  }
+
+  // 4️⃣ Logout
+  $('#logout').click(() => {
+    localStorage.removeItem('currentUserId');
+    window.location.href = 'index.html';
+  });
+</script>
+
+
+
+</html>

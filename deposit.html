@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <title>Wallet - Depositar</title>
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body class="bg-dark">
+
+  <div class="container min-vh-100 d-flex align-items-center justify-content-center">
+    <div class="row w-100 justify-content-center">
+      <div class="col-12 col-md-8 col-xl-6">
+
+        <div class="bg-secondary p-4 rounded shadow-lg text-center">
+
+          <!-- TÍTULO -->
+          <h2 class="text-warning mb-1">Depositar Dinero</h2>
+          <p class="text-light mb-4" style="font-size:0.95rem;">
+            Agrega dinero a tu cuenta
+          </p>
+
+          <!-- SALDO ACTUAL -->
+          <div class="bg-light rounded p-3 mb-4">
+            <small class="text-muted d-block">Saldo actual</small>
+            <h2 id="monto" class="font-weight-bold mb-0"></h2>
+          </div>
+
+          <!-- FORMULARIO -->
+          <form id="formDeposito">
+
+            <div class="form-group text-left">
+              <label class="text-light">Monto a depositar</label>
+              <input type="number"
+                class="form-control form-control-lg"
+                id="depositAmount"
+                placeholder="$0"
+                min="1">
+            </div>
+
+            <!-- BOTÓN -->
+            <button type="submit"
+              class="btn btn-success btn-lg btn-block mt-3">
+              Confirmar Depósito
+            </button>
+
+          </form>
+
+          <!-- ACCIONES -->
+          <div class="row mt-4">
+            <div class="col-6">
+              <a href="menu.html"
+                class="btn btn-outline-light btn-block">
+                Volver
+              </a>
+            </div>
+            <div class="col-6">
+              <button class="btn btn-danger btn-block" id="logout">
+                Cerrar sesión
+              </button>
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+</body>
+
+
+<script src="https://code.jquery.com/jquery-3.2.1.slim.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"></script>
+<script>
+$(document).ready(function () {
+
+  const currentUserId = localStorage.getItem('currentUserId');
+  if (!currentUserId) {
+    window.location.href = 'index.html';
+    return;
+  }
+
+  // 👥 OBTENER USUARIOS
+  let users = JSON.parse(localStorage.getItem('users')) || [];
+
+  // 👤 BUSCAR USUARIO LOGUEADO
+  let currentUser = users.find(u => u.id == currentUserId);
+
+  if (!currentUser) {
+    alert('Usuario no válido');
+    window.location.href = 'index.html';
+    return;
+  }
+
+  console.log('Usuario logueado:', currentUser);
+
+  /* ======================
+     MOSTRAR SALDO
+  ====================== */
+  $('#monto').text('$' + currentUser.saldo.toLocaleString('es-CL'));
+
+  /* ======================
+     DEPÓSITO
+  ====================== */
+  $('form').submit(function (e) {
+    e.preventDefault();
+
+    const deposito = Number($('#depositAmount').val());
+
+    if (deposito <= 0 || isNaN(deposito)) {
+      alert('Ingrese un monto válido');
+      return;
+    }
+
+    // Actualizar saldo
+    currentUser.saldo += deposito;
+
+    // Registrar movimiento
+    currentUser.movimientos.unshift({
+      tipo: 'deposito',
+      monto: deposito,
+      fecha: new Date().toLocaleString('es-CL')
+    });
+
+    // Guardar usuarios completos
+    localStorage.setItem('users', JSON.stringify(users));
+
+    alert('Depósito realizado con éxito');
+    location.reload();
+  });
+
+  /* ======================
+     LOGOUT
+  ====================== */
+  $("#logout").click(function () {
+    localStorage.removeItem('currentUserId');
+    window.location.href = 'index.html';
+  });
+
+});
+
+</script>
+
+</html>
